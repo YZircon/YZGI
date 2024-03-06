@@ -7,15 +7,21 @@
 #include "Ray.hpp"
 #include "Intersection.hpp"
 
+void Scene::buildBVH(){
+    this->bvh = new BVH(objects);
+}
+
 Intersection Scene::intersect(const Ray &ray) const{ // 最简单的方式是扫一遍场景中的所有object, 保留最近的交点.
     Intersection inter;
-    inter.distance = std::numeric_limits<float>::max();
+/*
     for(const auto obj : objects){
         Intersection now = obj->getIntersection(ray);
         if(now.happened && now.distance < inter.distance){
             inter = now;
         }
-    }
+    }*/
+    inter = this->bvh->Intersect(ray);
+
     return inter;
 }
 

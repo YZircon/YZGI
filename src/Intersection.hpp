@@ -1,6 +1,7 @@
 //
 // Created by yizr_cnyali on 2023/12/3.
 //
+#pragma once
 
 #ifndef YZGI_INTERSECTION_HPP
 #define YZGI_INTERSECTION_HPP

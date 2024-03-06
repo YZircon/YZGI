@@ -2,6 +2,16 @@
 
 An implementation of useful GI Algorithms, using C/C++
 
+------
+
+<center>
+    <img src="images/CornellBox_Microfacet_128spp.png" style="width: 300px;">
+</center>
+
+The sphere uses microfacet material, while other objects use diffuse material. The picture was rendered by YZGI, with 128 samples per pixel(spp), in 1890 seconds.
+
+------
+
 ## Features (Working now)
 
 **Model**
@@ -10,8 +20,20 @@ An implementation of useful GI Algorithms, using C/C++
 
 **Rendering**
 
-- [ ] Path-Tracing
+- [x] Path-Tracing
 - [ ] Photon Mapping
+
+**Materials**
+
+- [x] Diffuse BRDF
+
+- [x] Microfacet BRDF
+
+  - Cook Torrance GGX
+
+**Sampling**
+
+- [ ] Multiple Importance Sampling
 
 ## Build & Run
 
@@ -47,8 +69,6 @@ An implementation of useful GI Algorithms, using C/C++
 | Bounds3      | None                            | Bounding Box                                           |
 
 
-
-
 ## Resources
 
 ### 3rd Party Libraries
@@ -59,3 +79,6 @@ An implementation of useful GI Algorithms, using C/C++
 - nlohmann/json, JSON parser for Modern C++, https://github.com/nlohmann/json
 
 ### Models
+
+- The Cornell Box, https://www.graphics.cornell.edu/online/box/
+

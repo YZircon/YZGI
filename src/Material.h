@@ -11,7 +11,7 @@
 #include "global.hpp"
 
 enum MaterialType {
-    DIFFUSE, SPECULAR
+    DIFFUSE, Microfacet
 }; // TODO : 本质就是实现一个 BSDF, 短期内先写完 DIFFUSE 的, 整个系统没问题了再去扩展
 
 class Material {
@@ -39,6 +39,10 @@ public:
 
     Eigen::Vector3f Kd; // diffuse 值
 
+    Eigen::Vector3f F0; // Fresnel 项的初始值 F0
+
+    float roughness;
+
 private:
 
     MaterialType materialType = DIFFUSE; // 材质类型
@@ -46,6 +50,15 @@ private:
     Eigen::Vector3f Emission; // 自身发光
 
     std::string name; // 名字
+
+    Eigen::Vector3f Fresnel(const Eigen::Vector3f &i, const Eigen::Vector3f &N); // 这个地方是i和半程向量h的夹角还是和法线的夹角? 有说法说这两个是一样的, 对吗？
+
+    float Geometry1(const Eigen::Vector3f &x, const Eigen::Vector3f &h, const Eigen::Vector3f &N);
+
+    float GeometryGGX(const Eigen::Vector3f &i, const Eigen::Vector3f &o, const Eigen::Vector3f &h, const Eigen::Vector3f &N); // i 为入射光方向(的反方向), o 为出射光方向, h 为 i 和 o 的半程向量方向
+
+    float DistributionGGX(const Eigen::Vector3f &h, const Eigen::Vector3f &N);
+
 };
 
 

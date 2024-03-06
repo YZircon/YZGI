@@ -2,10 +2,10 @@
 // Created by yizr_cnyali on 2023/12/3.
 //
 
-#include "Eigen/Dense"
-
 #ifndef YZGI_RAY_HPP
 #define YZGI_RAY_HPP
+
+#include "Eigen/Dense"
 
 struct Ray { // now = origin + direction * t;
     Eigen::Vector3f origin; // 光线起点

@@ -2,6 +2,8 @@
 // Created by yizr_cnyali on 2023/12/3.
 //
 
+#pragma once
+
 #include "Scene.h"
 
 #ifndef YZGI_RENDERER_H

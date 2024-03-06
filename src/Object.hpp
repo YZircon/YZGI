@@ -21,6 +21,8 @@ public:
 
     virtual void sample(Intersection& inter, float& pdf) = 0;
 
+    virtual Bounds3 getBounds() = 0;
+
     virtual float getArea() = 0;
 
     virtual bool hasEmit() = 0;

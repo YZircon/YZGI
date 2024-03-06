@@ -3,6 +3,7 @@
 //
 
 #include <cstdio>
+#include <chrono>
 #include "Renderer.h"
 #include "Ray.hpp"
 #include "global.hpp"
@@ -19,7 +20,7 @@ namespace PathTracing{
         int m = 0;
 
        // change the spp value to change sample ammount
-        int spp = 5;
+        int spp = 128;
         std::cout << "SPP: " << spp << "\n";
         for (uint32_t j = 0; j < scene.height; ++j) {
             for (uint32_t i = 0; i < scene.width; ++i) {
@@ -29,11 +30,15 @@ namespace PathTracing{
                float y = (1 - 2 * (j + 0.5) / (float)scene.height) * scale;
 
                 Eigen::Vector3f dir = Eigen::Vector3f(-x, y, 1).normalized();
+                auto start = std::chrono::steady_clock::now();
                 for (int k = 0; k < spp; k++){
                     framebuffer[m] += scene.castRay(Ray(eye_pos, dir), 0) / spp;
                     //std::cout << "M = " << m << framebuffer[m] << std :: endl;
                     //std :: cout << scene.castRay(Ray(eye_pos, dir), 0) << std :: endl;
                 }
+                auto end = std::chrono::steady_clock::now();
+                std::chrono::duration<double> duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+                //std::cout << "Elapsed time: " << duration.count() << " seconds/pixel\n";
                 m++;
             }
             UpdateProgress(j / (float)scene.height);
