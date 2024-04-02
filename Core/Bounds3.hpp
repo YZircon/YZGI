@@ -18,8 +18,8 @@ public:
         float minNum = std::numeric_limits<float>::lowest();
         float maxNum = std::numeric_limits<float>::max();
 
-        pMin = Eigen::Vector3f(minNum, minNum, minNum);
-        pMax = Eigen::Vector3f(maxNum, maxNum, maxNum);
+        pMin = Eigen::Vector3f(maxNum, maxNum, maxNum);
+        pMax = Eigen::Vector3f(minNum, minNum, minNum);
     }
 
     Bounds3(const Eigen::Vector3f p) : pMin(p), pMax(p) {}
@@ -67,7 +67,6 @@ inline bool Bounds3::IntersectP(const Ray &ray, const Eigen::Vector3f &invDir) c
     // invDir: ray direction(x,y,z), invDir=(1.0/x,1.0/y,1.0/z), use this because Multiply is faster that Division
     // TODO test if ray bound intersects
     // 利用轴对齐包围盒的性质
-
     float tenter = std::numeric_limits<float>::lowest(), texit = std::numeric_limits<float>::max();
 
     // lowest 是 float 能去到的最小值, min 是绝对值最小的 float

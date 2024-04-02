@@ -1,7 +1,9 @@
-#include "Scene.h"
+#include "Scene.hpp"
 #include "Triangle.hpp"
-#include "Material.h"
-#include "Renderer.h" // 渲染器类
+#include "Material.hpp"
+#include "Renderer.hpp" // 渲染器类
+#include "Integrator.hpp"
+#include "../Integrators/PathTracing.hpp"
 #include <chrono>
 
 // TODO : Parse command (argc, argv) using getopt or CLI
@@ -14,7 +16,9 @@
 
 int main() {
     Scene scene;
-    PathTracing::Renderer r;
+    Renderer r;
+    PathTracingIntegrator SimplePT(10000, 0.8);
+
 
     Material* red = new Material(DIFFUSE, Eigen::Vector3f(0.0f, 0.0f, 0.0f));
     red->Kd = Eigen::Vector3f(0.63f, 0.065f, 0.05f);
@@ -26,17 +30,18 @@ int main() {
     light->Kd = Eigen::Vector3f(0.65f, 0.65f, 0.65f);
 
     Material* m = new Material(Microfacet, Eigen::Vector3f(0.0, 0.0, 0.0));
-    m->Kd = Eigen::Vector3f(0.3, 0.3, 0.25);
-    m->roughness = 0.35;
-    m->F0 = Eigen::Vector3f(1.0, 0.886, 0.608);
+    m->Kd = Eigen::Vector3f(0.75164f, 0.60648f, 0.22648f);
+    m->Ks = Eigen::Vector3f(0.628281f, 0.555802f, 0.366065f);
+    m->roughness = 0.5;
+    m->F0 = Eigen::Vector3f(1.0, 0.782, 0.344);
 
-    Model floor("../src/models/cornellbox/floor.obj", white);
-    Model sphere("../src/models/sphere/Sphere1.obj", m);
-    //Model shortbox("../src/models/cornellbox/shortbox.obj", m);
-    Model tallbox("../src/models/cornellbox/tallbox.obj", white);
-    Model left("../src/models/cornellbox/left.obj", red);
-    Model right("../src/models/cornellbox/right.obj", green);
-    Model light_("../src/models/cornellbox/light.obj", light); // 增加了 src/ 以应对我的 build 目录在外面的问题
+    Model floor("../Core/models/cornellbox/floor.obj", white);
+    Model sphere("../Core/models/sphere/Sphere1.obj", m);
+    Model shortbox("../Core/models/cornellbox/shortbox.obj", m);
+    Model tallbox("../Core/models/cornellbox/tallbox.obj", white);
+    Model left("../Core/models/cornellbox/left.obj", red);
+    Model right("../Core/models/cornellbox/right.obj", green);
+    Model light_("../Core/models/cornellbox/light.obj", light); // 增加了 src/ 以应对我的 build 目录在外面的问题
 
     scene.add(&floor);
     //scene.add(&shortbox);
@@ -49,12 +54,15 @@ int main() {
     scene.buildBVH();
 
     auto start = std::chrono::system_clock::now();
-    r.Render(scene);
+    r.Render(&scene, &SimplePT);
     auto stop = std::chrono::system_clock::now();
 
     std::cout << "Render complete: \n";
     std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::hours>(stop - start).count() << " hours\n";
     std::cout << "          : " << std::chrono::duration_cast<std::chrono::minutes>(stop - start).count() << " minutes\n";
     std::cout << "          : " << std::chrono::duration_cast<std::chrono::seconds>(stop - start).count() << " seconds\n";
+    printf("Triangle Tested:%d\n", test);
+    printf("Triangle Passed the test:%d\n", pass);
+    std::cout << "Elapsed time in Intersection Test: " << duration.count() << " seconds/intersect test\n";
     return 0;
 }

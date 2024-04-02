@@ -7,4 +7,22 @@ include_directories(3rdparty/eigen)
 include_directories(3rdparty/OBJ-Loader)
 include_directories(3rdparty/stb)
 
-add_executable(YZGI src/main.cpp src/Renderer.cpp src/Renderer.h src/Material.cpp src/Material.h src/Texture.cpp src/Texture.h src/Sampler.cpp src/Sampler.h src/Scene.cpp src/Scene.h src/Ray.hpp src/Object.hpp src/Intersection.hpp src/Triangle.hpp src/Bounds3.hpp src/BVH.cpp src/BVH.hpp src/global.hpp)
+add_executable(YZGI Core/main.cpp
+        Core/Renderer.cpp
+        Core/Renderer.hpp
+        Core/Material.cpp
+        Core/Material.hpp
+        Core/Texture.cpp
+        Core/Texture.hpp
+        Core/Sampler.cpp
+        Core/Sampler.hpp
+        Core/Scene.cpp
+        Core/Scene.hpp
+        Core/Ray.hpp
+        Core/Object.hpp
+        Core/Intersection.hpp
+        Core/Triangle.hpp
+        Core/Bounds3.hpp
+        Core/global.hpp
+        DS/BVH.cpp
+        DS/BVH.hpp Integrators/PathTracing.cpp Integrators/PathTracing.hpp Core/Integrator.hpp Integrators/PhotonMapping.cpp Integrators/PhotonMapping.hpp)

@@ -7,7 +7,7 @@
 #define YZGI_INTERSECTION_HPP
 
 #include "Eigen/Dense"
-#include "Material.h"
+#include "Material.hpp"
 
 class Object;
 

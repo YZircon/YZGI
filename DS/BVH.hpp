@@ -1,14 +1,14 @@
 //
 // Created by yizr_cnyali on 2023/12/18.
 //
-
+#pragma once
 #ifndef YZGI_BVH_H
 #define YZGI_BVH_H
 
-#include "Bounds3.hpp"
-#include "Object.hpp"
-#include "Ray.hpp"
-#include "Intersection.hpp"
+#include "../Core/Bounds3.hpp"
+#include "../Core/Object.hpp"
+#include "../Core/Ray.hpp"
+#include "../Core/Intersection.hpp"
 
 struct BVHNode;
 

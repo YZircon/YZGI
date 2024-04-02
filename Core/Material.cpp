@@ -2,10 +2,10 @@
 // Created by yizr_cnyali on 2023/12/3.
 //
 
-#include "Material.h"
+#include "Material.hpp"
 #include "global.hpp"
 
-Eigen::Vector3f transform(const Eigen:: Vector3f& target, const Eigen::Vector3f& N) { // 用罗德里格斯旋转公式构造一个以 N 为 z 轴的标准正交基, 然后把 target 变换过去, 使得采样出射方向的半球变成以 N为中心轴的上半球
+Eigen::Vector3f transform(const Eigen:: Vector3f& target, const Eigen::Vector3f& N) { // 用罗德里格斯旋转公式构造一个以 N 为 z 轴的标准正交基, 然后把 target 变换过去, 使得采样出射方向的半球变成以 N 为中心轴的上半球
     Eigen::Vector3f B, C;
     if(std::fabs(N.x()) > std::fabs(N.y())){
         C = Eigen::Vector3f(N.z(), 0.0f, -N.x()).normalized();
@@ -35,10 +35,15 @@ Eigen::Vector3f Material::Fresnel(const Eigen::Vector3f &i, const Eigen::Vector3
 
 float Material::Geometry1(const Eigen::Vector3f &x, const Eigen::Vector3f &h, const Eigen::Vector3f &N) {
     // Cook Torrance G GGX
-    // \frac{x.dot(h)}{x.dot(N)} \times \frac{2}{1 + \sqrt(1 + roughness^2tan^2(\theta_x))}
+    // \frac{x.dot(h)}{x.dot(N)} \times \frac{2}{1 + \sqrt(1 + a^2tan^2(\theta_x))}
     // \theta_x is the angel between x and N
     // tan^2(\theta_x) = \frac{1 - (x.dot(n)^2){(x.dot(n))^2}}
-    return (x.dot(h) / x.dot(N)) * (2.0 / (1 + std::sqrt(1 + roughness * roughness * ((1 - x.dot(N) * x.dot(N)) / (x.dot(N) * x.dot(N))))));
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float XdotH = x.dot(h);
+    float XdotN = x.dot(N);
+    float tanT2 = (1 - XdotN * XdotN) / (XdotN * XdotN); // tan^2(\theta_x)
+    return (XdotH / XdotN > 0 ? 1 : 0) * (2.0 / (1 + sqrt(1 + a2 * tanT2)));
 }
 
 float Material::GeometryGGX(const Eigen::Vector3f &i, const Eigen::Vector3f &o, const Eigen::Vector3f &h, const Eigen::Vector3f &N) {
@@ -47,8 +52,12 @@ float Material::GeometryGGX(const Eigen::Vector3f &i, const Eigen::Vector3f &o, 
 
 float Material::DistributionGGX(const Eigen::Vector3f &h, const Eigen::Vector3f &N) {
     // Cook Torrance D GGX
-    //N.dot(h) \times \frac{roughness^2}{\pi((N.dot(h))^2 * (roughness^2 - 1) + 1)^2}
-    return N.dot(h) * ((roughness * roughness) / (M_PI * (((N.dot(h) * N.dot(h)) * (roughness * roughness - 1.0) + 1) * ((N.dot(h) * N.dot(h)) * (roughness * roughness - 1.0) + 1))));
+    // \frac{a^2}{\pi((N.dot(h))^2 * (a^2 - 1) + 1)^2}, a = roughness^2
+    float a = roughness * roughness;
+    float a2 = a * a; // a^2
+    float NdotH = N.dot(h);
+    float m = NdotH * NdotH * (a2 - 1) + 1;
+    return (NdotH > 0 ? 1 : 0) * a2 / (M_PI * m * m);
 }
 
 Eigen::Vector3f Material::sample(const Eigen::Vector3f& wi, const Eigen::Vector3f& N) {
@@ -62,6 +71,12 @@ Eigen::Vector3f Material::sample(const Eigen::Vector3f& wi, const Eigen::Vector3
             Eigen::Vector3f localRay = Eigen::Vector3f(r * std::cos(phi), r * std::sin(phi), z);
             return transform(localRay, N);
 
+            break;
+        }
+        case Mirror: {
+            break;
+        }
+        case Glass: {
             break;
         }
         case Microfacet: {
@@ -87,6 +102,13 @@ Eigen::Vector3f Material::eval(const Eigen::Vector3f& wi, const Eigen::Vector3f&
             }
             break;
         }
+        case Mirror: {
+            return Eigen::Vector3f(0.0f, 0.0f, 0.0f); // 镜面反射不会吸收光线
+            break;
+        }
+        case Glass: {
+            break;
+        }
         case Microfacet: {
             if (wo.dot(N) > 0.0f) {
 
@@ -102,7 +124,8 @@ Eigen::Vector3f Material::eval(const Eigen::Vector3f& wi, const Eigen::Vector3f&
 
                 Eigen::Vector3f specular = (F * G * D) / (4 * N.dot(i) * N.dot(o));
 
-                return (Eigen::Vector3f(1.0, 1.0, 1.0) - F).cwiseProduct(Kd) + specular; // (1 - kReflection) * diffuse + kReflection * Specular
+                //return 0.5 * (Kd / M_PI) + 0.5 * Ks;
+                return (Eigen::Vector3f(1.0, 1.0, 1.0) - F).cwiseProduct(Kd / M_PI) + specular.cwiseProduct(Ks); // (1 - kReflection) * diffuse + kReflection * Specular
             } else {
                 return Eigen::Vector3f(0.0f, 0.0f, 0.0f);
             }
@@ -120,6 +143,13 @@ float Material::pdf(const Eigen::Vector3f& wi, const Eigen::Vector3f& wo, const 
             } else {
                 return 0.0f;
             }
+            break;
+        }
+        case Mirror: { // 完美的镜面反射方向是唯一的
+            return 0.0f;
+            break;
+        }
+        case Glass: {
             break;
         }
         case Microfacet: {

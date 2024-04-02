@@ -3,9 +3,9 @@
 //
 
 // TODO : 从 Texture 中采样
-
-#ifndef YZGI_SAMPLER_H
-#define YZGI_SAMPLER_H
+#pragma once
+#ifndef YZGI_SAMPLER_HPP
+#define YZGI_SAMPLER_HPP
 
 
 class Sampler {
@@ -13,4 +13,4 @@ class Sampler {
 };
 
 
-#endif //YZGI_SAMPLER_H
+#endif //YZGI_SAMPLER_HPP

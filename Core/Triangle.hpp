@@ -8,9 +8,9 @@
 
 // 在 OBJ_Loader.h 里手动 undef 掉了 OBJL_CONSOLE_OUTPUT , 使得 OBJ Loader 不会往 console 输出东西
 
-#include "BVH.hpp"
+#include "../DS/BVH.hpp"
 #include "Intersection.hpp"
-#include "Material.h"
+#include "Material.hpp"
 #include "OBJ_Loader.h"
 #include "Object.hpp"
 #include "Triangle.hpp"
@@ -240,7 +240,6 @@ Model::Model(std::string path, Material *_m = nullptr) {
                                              meshMat); // 一个潜在的问题是如果不同的Mesh有共用三角形且材质相同会导致实例化同一个三角形多次(但扬掉也不合适吧? 扬掉就不是不同mesh了)
                 meshTri->emplace_back(tri);
             }
-
             Mesh *mesh = new Mesh(meshTri, meshMat);
 
             meshes.emplace_back(mesh);
@@ -254,6 +253,7 @@ Model::Model(std::string path, Material *_m = nullptr) {
     }
 }
 
+std::chrono::duration<double> duration;
 inline Intersection Model::getIntersection(Ray ray) {
 
     Intersection inter;
@@ -267,10 +267,12 @@ inline Intersection Model::getIntersection(Ray ray) {
         }
     }*/
     inter = bvh->Intersect(ray);
+
     return inter;
 }
 
 inline Intersection Mesh::getIntersection(Ray ray) { // Mesh 和 ray 的最近交点
+    auto start = std::chrono::steady_clock::now();
     Intersection inter;
     /*inter.distance = std::numeric_limits<float>::max();
     for(const auto triangle : *triangles){
@@ -280,18 +282,24 @@ inline Intersection Mesh::getIntersection(Ray ray) { // Mesh 和 ray 的最近�
         }
     }*/
     inter = bvh->Intersect(ray);
+
+    auto end = std::chrono::steady_clock::now();
+    duration += std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
     return inter;
 }
 
 inline Bounds3 Triangle::getBounds() { return Bounds3(v0, v1).Union(v2); }
 
-inline Intersection Triangle::getIntersection(Ray ray) {
+int test = 0, pass = 0;
 
+inline Intersection Triangle::getIntersection(Ray ray) {
+    test++;
     Intersection inter; // 这些都是 Möller–Trumbore 相交算法前置计算的信息
 
     if ((ray.direction).dot(normal) > 0)
         return inter;
     double u, v, t_tmp = 0;
+
     Eigen::Vector3f pvec = (ray.direction).cross(e2);
     double det = e1.dot(pvec);
     if (fabs(det) < eps)
@@ -317,7 +325,8 @@ inline Intersection Triangle::getIntersection(Ray ray) {
     inter.normal = normal;// 目前填的是交点处(所在三角形)的法向量
     inter.object = this; // 目前的理解是相交发生的物体是当前的三角形
     inter.material = m; //　目前用的是它所属的三角形的material
-    //inter这几个不太确定的参数要填啥w
+    //inter这几个不太确定的参数要填啥w*/
+    if(inter.happened) pass++;
     return inter;
 }
 
