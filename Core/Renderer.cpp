@@ -20,7 +20,7 @@ void Renderer::Render(const Scene *pScene, Integrator *integrator) {
     int m = 0;
 
     // change the spp value to change sample ammount
-    int spp = 5;
+    int spp = 1024;
     std::cout << "SPP: " << spp << "\n";
     for (uint32_t j = 0; j < pScene->height; ++j) {
         for (uint32_t i = 0; i < pScene->width; ++i) {

@@ -12,7 +12,7 @@
 
 class Renderer {
 public:
-    void Render(const Scene *pScene, Integrator *integrator); // TODO : 这玩意的返回值应该是个矩阵形式存储的图像
+    void Render(const Scene *pScene, Integrator *integrator);
 };
 
 #endif //YZGI_RENDERER_HPP

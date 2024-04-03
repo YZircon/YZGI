@@ -198,7 +198,7 @@ Model::Model(std::string path, Material *_m = nullptr) {
     area = 0;
     if (loader.LoadFile(path)) { // 换行是这玩意弄出来的? 671行那个ifdef好像不知道为啥过去了
         if (_m == nullptr) {
-            for (int i = 0; i < loader.LoadedMaterials.size(); i++) { // TODO: 根据obj的信息加载材质
+            for (int i = 0; i < loader.LoadedMaterials.size(); i++) { // 根据obj的信息加载材质
                 Material *mat = new Material(DIFFUSE, Eigen::Vector3f(0, 0, 0));
                 materials[mat->getName()] = mat; // 目前如果用的是手动实例化的 Material, 由于没有名字, 不会被存储到 materials 中 TODO: 添加名字
             }
@@ -290,7 +290,7 @@ inline Intersection Mesh::getIntersection(Ray ray) { // Mesh 和 ray 的最近�
 
 inline Bounds3 Triangle::getBounds() { return Bounds3(v0, v1).Union(v2); }
 
-int test = 0, pass = 0;
+long long test = 0, pass = 0;
 
 inline Intersection Triangle::getIntersection(Ray ray) {
     test++;
@@ -318,7 +318,7 @@ inline Intersection Triangle::getIntersection(Ray ray) {
 
     if (t_tmp < 0) return inter; // 这里一定要注意!! 小于0说明交点在起点与光线的反方向, 那就是没有交点!! 以前没发现是因为包围盒的IntersectP排除了大量错误的交点
 
-    // TODO find ray triangle intersection
+    // find ray triangle intersection
     inter.happened = true;// 用面积判target是否在三角形内
     inter.position = v0 + u * e1 + v * e2;// 交点坐标
     inter.distance = t_tmp;// 传输到交点的距离(这里用的时间而不是空间距离)

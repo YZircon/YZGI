@@ -32,13 +32,16 @@ int main() {
     Material* m = new Material(Microfacet, Eigen::Vector3f(0.0, 0.0, 0.0));
     m->Kd = Eigen::Vector3f(0.75164f, 0.60648f, 0.22648f);
     m->Ks = Eigen::Vector3f(0.628281f, 0.555802f, 0.366065f);
-    m->roughness = 0.5;
+    m->roughness = 0.7;
     m->F0 = Eigen::Vector3f(1.0, 0.782, 0.344);
 
+    Material* mirror = new Material(Mirror, Eigen::Vector3f(0.0, 0.0, 0.0));
+    mirror->F0 = Eigen::Vector3f(1.0, 1.0, 1.0);
+
     Model floor("../Core/models/cornellbox/floor.obj", white);
-    Model sphere("../Core/models/sphere/Sphere1.obj", m);
-    Model shortbox("../Core/models/cornellbox/shortbox.obj", m);
-    Model tallbox("../Core/models/cornellbox/tallbox.obj", white);
+    Model sphere("../Core/models/sphere/Sphere1.obj", mirror);
+    Model shortbox("../Core/models/cornellbox/shortbox.obj", mirror);
+    Model tallbox("../Core/models/cornellbox/tallbox.obj", mirror);
     Model left("../Core/models/cornellbox/left.obj", red);
     Model right("../Core/models/cornellbox/right.obj", green);
     Model light_("../Core/models/cornellbox/light.obj", light); // 增加了 src/ 以应对我的 build 目录在外面的问题
@@ -61,8 +64,8 @@ int main() {
     std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::hours>(stop - start).count() << " hours\n";
     std::cout << "          : " << std::chrono::duration_cast<std::chrono::minutes>(stop - start).count() << " minutes\n";
     std::cout << "          : " << std::chrono::duration_cast<std::chrono::seconds>(stop - start).count() << " seconds\n";
-    printf("Triangle Tested:%d\n", test);
-    printf("Triangle Passed the test:%d\n", pass);
-    std::cout << "Elapsed time in Intersection Test: " << duration.count() << " seconds/intersect test\n";
+    printf("Triangles Tested:%lld\n", test);
+    printf("Triangles Passed the test:%lld\n", pass);
+    std::cout << "Elapsed time in Intersection Test: " << duration.count() << " seconds\n";
     return 0;
 }

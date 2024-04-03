@@ -5,11 +5,12 @@
 #include "Material.hpp"
 #include "global.hpp"
 
-Eigen::Vector3f transform(const Eigen:: Vector3f& target, const Eigen::Vector3f& N) { // 用罗德里格斯旋转公式构造一个以 N 为 z 轴的标准正交基, 然后把 target 变换过去, 使得采样出射方向的半球变成以 N 为中心轴的上半球
+Eigen::Vector3f transform(const Eigen::Vector3f &target,
+                          const Eigen::Vector3f &N) { // 用罗德里格斯旋转公式构造一个以 N 为 z 轴的标准正交基, 然后把 target 变换过去, 使得采样出射方向的半球变成以 N 为中心轴的上半球
     Eigen::Vector3f B, C;
-    if(std::fabs(N.x()) > std::fabs(N.y())){
+    if (std::fabs(N.x()) > std::fabs(N.y())) {
         C = Eigen::Vector3f(N.z(), 0.0f, -N.x()).normalized();
-    }else{
+    } else {
         C = Eigen::Vector3f(0.0f, N.z(), -N.y()).normalized();
     }
     //B = C.cross(N).normalized();
@@ -24,13 +25,16 @@ Material::Material(MaterialType _type, Eigen::Vector3f _Emission) {
 
 Material::~Material() = default;
 
+MaterialType Material::getType() { return materialType; }
+
 Eigen::Vector3f Material::getEmission() { return Emission; }
 
 std::string Material::getName() { return name; }
 
-Eigen::Vector3f Material::Fresnel(const Eigen::Vector3f &i, const Eigen::Vector3f &N) { // Fresnel 项计算的是被反射的能量的总量, 因此 i 需要传入打到物体表面后的出射方向
+Eigen::Vector3f
+Material::Fresnel(const Eigen::Vector3f &i, const Eigen::Vector3f &N) { // Fresnel 项计算的是被反射的能量的总量, 因此 i 需要传入打到物体表面后的出射方向
 
-    return F0 + (Eigen::Vector3f(1.0, 1.0, 1.0)- F0) * pow(1 - i.dot(N), 5);
+    return F0 + (Eigen::Vector3f(1.0, 1.0, 1.0) - F0) * pow(1 - i.dot(N), 5);
 }
 
 float Material::Geometry1(const Eigen::Vector3f &x, const Eigen::Vector3f &h, const Eigen::Vector3f &N) {
@@ -46,7 +50,8 @@ float Material::Geometry1(const Eigen::Vector3f &x, const Eigen::Vector3f &h, co
     return (XdotH / XdotN > 0 ? 1 : 0) * (2.0 / (1 + sqrt(1 + a2 * tanT2)));
 }
 
-float Material::GeometryGGX(const Eigen::Vector3f &i, const Eigen::Vector3f &o, const Eigen::Vector3f &h, const Eigen::Vector3f &N) {
+float Material::GeometryGGX(const Eigen::Vector3f &i, const Eigen::Vector3f &o, const Eigen::Vector3f &h,
+                            const Eigen::Vector3f &N) {
     return Geometry1(i, h, N) * Geometry1(o, h, N);
 }
 
@@ -60,9 +65,9 @@ float Material::DistributionGGX(const Eigen::Vector3f &h, const Eigen::Vector3f 
     return (NdotH > 0 ? 1 : 0) * a2 / (M_PI * m * m);
 }
 
-Eigen::Vector3f Material::sample(const Eigen::Vector3f& wi, const Eigen::Vector3f& N) {
+Eigen::Vector3f Material::sample(const Eigen::Vector3f &wi, const Eigen::Vector3f &N) {
 
-    switch (materialType){
+    switch (materialType) {
         case DIFFUSE: {
             float x_1 = get_random_float(), x_2 = get_random_float();
             float z = std::fabs(1.0 - 2.0f * x_1);
@@ -74,6 +79,9 @@ Eigen::Vector3f Material::sample(const Eigen::Vector3f& wi, const Eigen::Vector3
             break;
         }
         case Mirror: {
+            Eigen::Vector3f i = -wi; // wi指向的是入射点, 需要反转朝外
+            //i + o = 2 * i.dot(N) * N
+            return 2 * i.dot(N) * N - i; // 对称出来就是镜面反射方向
             break;
         }
         case Glass: {
@@ -91,7 +99,8 @@ Eigen::Vector3f Material::sample(const Eigen::Vector3f& wi, const Eigen::Vector3
     }
 }
 
-Eigen::Vector3f Material::eval(const Eigen::Vector3f& wi, const Eigen::Vector3f& wo, const Eigen::Vector3f& N) { // 真实的光照沿着 wi方向射入, 从 wo 方向射出(因此这条路径和从相机发出的"光路"是相反的)
+Eigen::Vector3f Material::eval(const Eigen::Vector3f &wi, const Eigen::Vector3f &wo,
+                               const Eigen::Vector3f &N) { // 真实的光照沿着 wi方向射入, 从 wo 方向射出(因此这条路径和从相机发出的"光路"是相反的)
 
     switch (materialType) {
         case DIFFUSE: {
@@ -103,7 +112,13 @@ Eigen::Vector3f Material::eval(const Eigen::Vector3f& wi, const Eigen::Vector3f&
             break;
         }
         case Mirror: {
-            return Eigen::Vector3f(0.0f, 0.0f, 0.0f); // 镜面反射不会吸收光线
+            if (wo.dot(N) > 0.0f) {
+                Eigen::Vector3f i = -wi; // 这就是出射光方向
+                Eigen::Vector3f F = Fresnel(i, N); // Fresnel项为反射出去的能量
+                return F;
+            } else {
+                return Eigen::Vector3f(0.0f, 0.0f, 0.0f);
+            }
             break;
         }
         case Glass: {
@@ -116,7 +131,7 @@ Eigen::Vector3f Material::eval(const Eigen::Vector3f& wi, const Eigen::Vector3f&
                 Eigen::Vector3f o = wo; // 这就是出射光方向
                 Eigen::Vector3f h = (i + o).normalized(); // 半程向量
 
-                Eigen::Vector3f F = Fresnel(o, N);
+                Eigen::Vector3f F = Fresnel(i, N);
 
                 float G = GeometryGGX(i, o, h, N);
 
@@ -125,7 +140,8 @@ Eigen::Vector3f Material::eval(const Eigen::Vector3f& wi, const Eigen::Vector3f&
                 Eigen::Vector3f specular = (F * G * D) / (4 * N.dot(i) * N.dot(o));
 
                 //return 0.5 * (Kd / M_PI) + 0.5 * Ks;
-                return (Eigen::Vector3f(1.0, 1.0, 1.0) - F).cwiseProduct(Kd / M_PI) + specular.cwiseProduct(Ks); // (1 - kReflection) * diffuse + kReflection * Specular
+                return (Eigen::Vector3f(1.0, 1.0, 1.0) - F).cwiseProduct(Kd / M_PI) +
+                       specular.cwiseProduct(Ks); // (1 - kReflection) * diffuse + kReflection * Specular
             } else {
                 return Eigen::Vector3f(0.0f, 0.0f, 0.0f);
             }
@@ -134,7 +150,7 @@ Eigen::Vector3f Material::eval(const Eigen::Vector3f& wi, const Eigen::Vector3f&
     }
 }
 
-float Material::pdf(const Eigen::Vector3f& wi, const Eigen::Vector3f& wo, const Eigen::Vector3f& N) {
+float Material::pdf(const Eigen::Vector3f &wi, const Eigen::Vector3f &wo, const Eigen::Vector3f &N) {
 
     switch (materialType) {
         case DIFFUSE: {
@@ -146,7 +162,11 @@ float Material::pdf(const Eigen::Vector3f& wi, const Eigen::Vector3f& wo, const 
             break;
         }
         case Mirror: { // 完美的镜面反射方向是唯一的
-            return 0.0f;
+            if (wo.dot(N) > 0.0f) {
+                return 1.0f;
+            } else {
+                return 0.0f;
+            }
             break;
         }
         case Glass: {

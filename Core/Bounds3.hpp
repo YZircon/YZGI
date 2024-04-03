@@ -12,7 +12,7 @@
 
 class Bounds3{
 public:
-    Eigen::Vector3f pMin, pMax; // 包围盒, TODO: 需要支持 1.合并 2. 判断是否和光线存在交点
+    Eigen::Vector3f pMin, pMax; // 包围盒
 
     Bounds3(){
         float minNum = std::numeric_limits<float>::lowest();
@@ -65,7 +65,7 @@ public:
 
 inline bool Bounds3::IntersectP(const Ray &ray, const Eigen::Vector3f &invDir) const { // 在头文件外面实现成员函数, 如果不 inline 内联展开, 多次引用该头文件会导致此函数被重复定义
     // invDir: ray direction(x,y,z), invDir=(1.0/x,1.0/y,1.0/z), use this because Multiply is faster that Division
-    // TODO test if ray bound intersects
+    // test if ray bound intersects
     // 利用轴对齐包围盒的性质
     float tenter = std::numeric_limits<float>::lowest(), texit = std::numeric_limits<float>::max();
 

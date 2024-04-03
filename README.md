@@ -4,11 +4,17 @@ An implementation of useful GI Algorithms, using C/C++
 
 ------
 
-<center>
-    <img src="images/CornellBox_Microfacet_128spp.png" style="width: 300px;">
-</center>
+<p align="center">
+  <picture>
+    <img src="images/CornellBox_Microfacet_128spp_360s.png" style="width: 300px;">
+  </picture>
+  <picture>
+    <img src="images/CornellBox+Sphere_Mirror_1024spp_2610s.png" style="width: 300px;">
+  </picture>
+</p>
+The sphere in the left picture uses microfacet material, while other objects use diffuse material. The left picture was rendered by YZGI, with 128 samples per pixel(spp), in 360 seconds.
 
-The sphere uses microfacet material, while other objects use diffuse material. The picture was rendered by YZGI, with 128 samples per pixel(spp), in 1890 seconds.
+The tall box and the sphere in the right picture use mirror material based on the Fresnel reflection equations, while other objects use diffuse material. It's rendered by YZGI, with 1024 spp, in 2610 seconds.
 
 ------
 

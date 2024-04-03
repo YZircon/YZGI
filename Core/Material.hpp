@@ -35,6 +35,8 @@ public:
         return Emission.norm() > eps;
     }
 
+    MaterialType getType();
+
     std::string getName();
 
     Eigen::Vector3f getEmission(); // 材质自身的发光
