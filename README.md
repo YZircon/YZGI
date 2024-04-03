@@ -6,10 +6,10 @@ An implementation of useful GI Algorithms, using C/C++
 
 <p align="center">
   <picture>
-    <img src="images/CornellBox_Microfacet_128spp_360s.png" style="width: 300px;">
+    <img src="images/CornellBox_Microfacet_128spp_360s.png" height="300em">
   </picture>
   <picture>
-    <img src="images/CornellBox+Sphere_Mirror_1024spp_2610s.png" style="width: 300px;">
+    <img src="images/CornellBox+Sphere_Mirror_1024spp_2610s.png" height="300em">
   </picture>
 </p>
 The sphere in the left picture uses microfacet material, while other objects use diffuse material. The left picture was rendered by YZGI, with 128 samples per pixel(spp), in 360 seconds.
