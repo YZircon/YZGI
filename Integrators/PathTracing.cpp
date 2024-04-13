@@ -26,11 +26,11 @@ Eigen::Vector3f PathTracingIntegrator::CastRay(const Ray &ray, const Scene *pSce
     Eigen::Vector3f ws = (x - p).normalized();
     Eigen::Vector3f N = wo_inter.normal; // n
     Eigen::Vector3f NN = ws_inter.normal; // n'
-    if (wo_inter.material->getType() != Mirror) {
+    if (wo_inter.material->getType() != Mirror && wo_inter.material->getType() != Glass) {
         Ray directRay(p + N * eps, ws);
 
         Intersection directRayInter = pScene->intersect(directRay);
-        //if(directRayInter.happened) puts("OK");
+        //\if(directRayInter.happened) puts("OK");
 
         if (directRayInter.happened && (x - directRayInter.position).norm() < eps) {
             L_dir = ws_inter.emit.cwiseProduct(wo_inter.material->eval(-ws, -wo, N)) * N.dot(ws) * NN.dot(-ws) /
@@ -44,7 +44,14 @@ Eigen::Vector3f PathTracingIntegrator::CastRay(const Ray &ray, const Scene *pSce
             L_indir = Eigen::Vector3f(0.0, 0.0, 0.0);
         } else {
             Eigen::Vector3f wi = wo_inter.material->sample(wo, N);
-            Ray r(p, wi);
+
+            Eigen::Vector3f ro; // r origin
+            if(wi.dot(N) > 0.0f){ // 加个偏移避免自相交`
+                ro = p + N * eps;
+            }else {
+                ro = p - N * eps;
+            }
+            Ray r(ro, wi);
 
             Intersection indirectRayInter = pScene->intersect(r);
             if (!indirectRayInter.happened) {
@@ -58,13 +65,21 @@ Eigen::Vector3f PathTracingIntegrator::CastRay(const Ray &ray, const Scene *pSce
             }
         }
     } else {
+        //puts("Hit Glass");
         float ksi = get_random_float();
 
         if (ksi > uRussianRoulette) {
             L_indir = Eigen::Vector3f(0.0, 0.0, 0.0);
         } else {
             Eigen::Vector3f wi = wo_inter.material->sample(wo, N);
-            Ray r(p, wi);
+
+            Eigen::Vector3f ro; // r origin
+            if(wi.dot(N) > 0.0f){ // 加个偏移避免自相交`
+                ro = p + N * eps;
+            }else {
+                ro = p - N * eps;
+            }
+            Ray r(ro, wi);
 
             Intersection indirectRayInter = pScene->intersect(r);
             if (!indirectRayInter.happened) {

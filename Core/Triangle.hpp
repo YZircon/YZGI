@@ -296,8 +296,6 @@ inline Intersection Triangle::getIntersection(Ray ray) {
     test++;
     Intersection inter; // 这些都是 Möller–Trumbore 相交算法前置计算的信息
 
-    if ((ray.direction).dot(normal) > 0)
-        return inter;
     double u, v, t_tmp = 0;
 
     Eigen::Vector3f pvec = (ray.direction).cross(e2);

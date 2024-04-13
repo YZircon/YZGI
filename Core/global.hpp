@@ -9,7 +9,7 @@
 #include <iostream>
 #include "Eigen/Dense"
 
-constexpr float eps = 1e-4;
+constexpr float eps = 1e-3;
 
 inline float clamp(const float &lo, const float &hi, const float &v) { return std::max(lo, std::min(hi, v)); }
 

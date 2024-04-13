@@ -16,6 +16,10 @@ enum MaterialType {
     DIFFUSE, Mirror, Glass, Microfacet
 }; // TODO : 本质就是实现一个 BSDF, 短期内先写完 DIFFUSE 的, 整个系统没问题了再去扩展
 
+enum MaterialStatus{
+    Reflection, Refraction
+};
+
 class Material {
 public:
     Material(MaterialType _type, Eigen::Vector3f _Emission);
@@ -45,9 +49,11 @@ public:
 
     Eigen::Vector3f Ks; // specular 值
 
-    Eigen::Vector3f F0; // Fresnel 项的初始值 F0
+    Eigen::Vector3f F0; // Fresnel 项的初始值 F0, 目前约定在sRGB空间, 折射率设定为从真空(折射率为1)进入材质
 
-    float roughness;
+    float ior; // 折射率
+
+    float glossiness; // Kd+Ks+F0+glossiness是S/G工作流
 
 private:
 

@@ -17,7 +17,7 @@
 int main() {
     Scene scene;
     Renderer r;
-    PathTracingIntegrator SimplePT(10000, 0.8);
+    PathTracingIntegrator SimplePT(10000, 0.9);
 
 
     Material* red = new Material(DIFFUSE, Eigen::Vector3f(0.0f, 0.0f, 0.0f));
@@ -30,16 +30,21 @@ int main() {
     light->Kd = Eigen::Vector3f(0.65f, 0.65f, 0.65f);
 
     Material* m = new Material(Microfacet, Eigen::Vector3f(0.0, 0.0, 0.0));
-    m->Kd = Eigen::Vector3f(0.75164f, 0.60648f, 0.22648f);
-    m->Ks = Eigen::Vector3f(0.628281f, 0.555802f, 0.366065f);
-    m->roughness = 0.7;
-    m->F0 = Eigen::Vector3f(1.0, 0.782, 0.344);
+    m->Kd = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
+    m->Ks = Eigen::Vector3f(1.0f, 0.782f, 0.344f);
+    m->glossiness = 0.7;
+    m->F0 = Eigen::Vector3f(1.0f, 0.782f, 0.344f);
 
     Material* mirror = new Material(Mirror, Eigen::Vector3f(0.0, 0.0, 0.0));
     mirror->F0 = Eigen::Vector3f(1.0, 1.0, 1.0);
 
+    Material* glass = new Material(Glass, Eigen::Vector3f(0.0, 0.0, 0.0));
+    glass->ior = 1.5;
+    glass->F0 = Eigen::Vector3f(0.04f, 0.04f, 0.04f); // 注意F0跟ior需要是匹配的, 否则可能导致反射和折射的强度分配完全不对头
+
     Model floor("../Core/models/cornellbox/floor.obj", white);
-    Model sphere("../Core/models/sphere/Sphere1.obj", mirror);
+    Model leftsphere("../Core/models/sphere/LeftSphere.obj", mirror);
+    Model rightsphere("../Core/models/sphere/RightSphere.obj", mirror);
     Model shortbox("../Core/models/cornellbox/shortbox.obj", mirror);
     Model tallbox("../Core/models/cornellbox/tallbox.obj", mirror);
     Model left("../Core/models/cornellbox/left.obj", red);
@@ -47,9 +52,10 @@ int main() {
     Model light_("../Core/models/cornellbox/light.obj", light); // 增加了 src/ 以应对我的 build 目录在外面的问题
 
     scene.add(&floor);
-    //scene.add(&shortbox);
+    scene.add(&shortbox);
     scene.add(&tallbox);
-    scene.add(&sphere);
+    //scene.add(&leftsphere);
+    //scene.add(&rightsphere);
     scene.add(&left);
     scene.add(&right);
     scene.add(&light_);
