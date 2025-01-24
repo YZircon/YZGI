@@ -26,7 +26,7 @@ struct Vertex {
 
 class Triangle : public Object {
 public:
-    Triangle(Vertex _v0, Vertex _v1, Vertex _v2, Material *_m = nullptr) {
+    Triangle(Vertex &_v0, Vertex &_v1, Vertex &_v2, Material *_m = nullptr) {
 
         v0 = _v0.pos, v1 = _v1.pos, v2 = _v2.pos;
         n0 = _v0.normal, n1 = _v1.normal, n2 = _v2.normal;
@@ -237,7 +237,7 @@ Model::Model(std::string path, Material *_m = nullptr) {
                         .texCoords = Eigen::Vector2f(_v2.TextureCoordinate.X, _v2.TextureCoordinate.Y)};
 
                 Triangle *tri = new Triangle(v0, v1, v2,
-                                             meshMat); // 一个潜在的问题是如果不同的Mesh有共用三角形且材质相同会导致实例化同一个三角形多次(但扬掉也不合适吧? 扬掉就不是不同mesh了)
+                                             meshMat); // 一个潜在的问题是如果不同的Mesh有共用三角形且材质相同会导致实例化同一个三角形多次(但扬掉也不合适吧? 扬掉就不是不同mesh了), 我觉得规范应该是不允许Mesh共用三角形
                 meshTri->emplace_back(tri);
             }
             Mesh *mesh = new Mesh(meshTri, meshMat);

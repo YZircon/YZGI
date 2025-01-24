@@ -76,7 +76,7 @@ Eigen::Vector3f Material::sample(const Eigen::Vector3f &wi, const Eigen::Vector3
             float r = std::sqrt(1.0 - z * z), phi = 2 * M_PI * x_2;
 
             Eigen::Vector3f localRay = Eigen::Vector3f(r * std::cos(phi), r * std::sin(phi), z);
-            return transform(localRay, N);
+            return transform(localRay, N).normalized();
 
             break;
         }
@@ -84,7 +84,7 @@ Eigen::Vector3f Material::sample(const Eigen::Vector3f &wi, const Eigen::Vector3
 
             Eigen::Vector3f i = -wi; // wi指向的是入射点, 需要反转朝外
             //i + o = 2 * i.dot(N) * N
-            return 2 * i.dot(N) * N - i; // 对称出来就是镜面反射方向
+            return (2 * i.dot(N) * N - i).normalized(); // 对称出来就是镜面反射方向
             break;
         }
         case Glass: {
@@ -96,9 +96,9 @@ Eigen::Vector3f Material::sample(const Eigen::Vector3f &wi, const Eigen::Vector3
 
             if (get_random_float() < P) { // P 是由 Fresnel 项确定的发生反射的量, 用于随机采样是反射还是折射
                 if (i.dot(N) > 0.0f) { // 外表面反射
-                    return 2 * i.dot(N) * N - i; // 对称出来就是镜面反射方向
+                    return (2 * i.dot(N) * N - i).normalized(); // 对称出来就是镜面反射方向
                 } else { // 内表面反射
-                    return 2 * i.dot(-N) * (-N) - i;
+                    return (2 * i.dot(-N) * (-N) - i).normalized();
                 }
             } else {
                 if (i.dot(N) > 0.0f) { // 外表面折射
@@ -121,13 +121,17 @@ Eigen::Vector3f Material::sample(const Eigen::Vector3f &wi, const Eigen::Vector3
             break;
         }
         case Microfacet: {
+            // Microfacet Models for Refraction through Rough Surfaces https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html
 
-            float x_1 = get_random_float(), x_2 = get_random_float();
-            float z = std::fabs(1.0 - 2.0f * x_1);
-            float r = std::sqrt(1.0 - z * z), phi = 2 * M_PI * x_2;
+            float x_1 = get_random_float(), x_2 = get_random_float(); // xi_1, xi_2
+            float a = (1 - glossiness) * (1 - glossiness); // Same as a in GGX
+            float a2 = a * a;
+            float theta = std::acos(std::sqrt((1 - x_1) / (x_1 * (a2 - 1) + 1)) );
+            float phi = 2 * M_PI * x_2;
 
-            Eigen::Vector3f localRay = Eigen::Vector3f(r * std::cos(phi), r * std::sin(phi), z);
-            return transform(localRay, N);
+            Eigen::Vector3f localRay = Eigen::Vector3f( std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta));
+            return transform(localRay, N).normalized();
+
             break;
         }
     }
@@ -185,7 +189,7 @@ Eigen::Vector3f Material::eval(const Eigen::Vector3f &wi, const Eigen::Vector3f 
 
                 //return 0.5 * (Kd / M_PI) + 0.5 * Ks;
                 return (Eigen::Vector3f(1.0, 1.0, 1.0) - F).cwiseProduct(Kd / M_PI) +
-                       specular.cwiseProduct(Ks); // (1 - kReflection) * diffuse + kReflection * Specular
+                       specular; // (1 - kReflection) * diffuse + kReflection * Specular
             } else {
                 return Eigen::Vector3f(0.0f, 0.0f, 0.0f);
             }
@@ -206,7 +210,7 @@ float Material::pdf(const Eigen::Vector3f &wi, const Eigen::Vector3f &wo, const 
             break;
         }
         case Mirror: { // 完美的镜面反射方向是唯一的
-            if (wo.dot(N) > 0.0f) {
+            if (fabs(sample(wi, N).dot(wo) - 1.0f) < eps) { // 应该和真实的采样到的方向相比
                 return 1.0f;
             } else {
                 return 0.0f;
@@ -223,15 +227,55 @@ float Material::pdf(const Eigen::Vector3f &wi, const Eigen::Vector3f &wo, const 
 
             if ((i.dot(N) > 0.0f && o.dot(N) > 0.0f) ||
                 (i.dot(N) < 0.0f && o.dot(N) < 0.0f)) { // 入射光和出射光都在法线的同侧为反射, 否则为折射
-                return P;
+                Eigen::Vector3f reflect;
+                if (i.dot(N) > 0.0f) { // 外表面反射
+                    reflect = 2 * i.dot(N) * N - i; // 对称出来就是镜面反射方向
+                } else { // 内表面反射
+                    reflect = 2 * i.dot(-N) * (-N) - i;
+                }
+                if(fabs(reflect.dot(wo) - 1.0f) < eps) { // 如果是反射而且是个合法的反射方向
+                    return P;
+                }else {
+                    return 0.0f;
+                }
             } else { // 折射
-                return (1 - P);
+                Eigen::Vector3f refract;
+                if (i.dot(N) > 0.0f) { // 外表面折射
+                    float cosi = i.dot(N);
+                    float etai = 1.0;
+                    float etat = ior;
+                    float eta = etai / etat;
+                    float k = 1 - eta * eta * (1 - cosi * cosi);
+                    refract = (k < 0.0f ? Eigen::Vector3f(0.0f, 0.0f, 0.0f) : eta * wi + (eta * cosi - std::sqrt(k)) * N).normalized();
+                } else { // 内表面折射
+                    float cosi = i.dot(-N);
+                    float etai = ior;
+                    float etat = 1.0;
+                    float eta = etai / etat;
+                    float k = 1 - eta * eta * (1 - cosi * cosi);
+                    refract = (k < 0.0f ? Eigen::Vector3f(0.0f, 0.0f, 0.0f) : eta * wi + (eta * cosi - std::sqrt(k)) * (-N)).normalized();
+                }
+                if(fabs(refract.dot(wo) - 1.0f) < eps) { // 如果是折射而且是个合法的折射方向
+                    return (1 - P);
+                }else {
+                    return 0.0f;
+                }
             }
             break;
         }
         case Microfacet: {
-            if (wo.dot(N) > 0.0f) { // Uniform sample upper sphere, pdf = 1 / 2\pi (单位球面积为4\pi, 只有上半球面有效为 2\pi)
-                return 0.5f / M_PI;
+            if (wo.dot(N) > 0.0f) {
+                Eigen::Vector3f i = -wi; // 为了求半程向量, 需要用入射光方向的反方向
+                Eigen::Vector3f o = wo; // 这就是出射光方向
+                Eigen::Vector3f h = (i + o).normalized(); // 半程向量
+
+
+                float a = (1 - glossiness) * (1 - glossiness);
+                float a2 = a * a; // a^2
+                float NdotH = N.dot(h);
+                float m = NdotH * NdotH * (a2 - 1) + 1;
+                //printf("P: %f\n", (2 * a2 * NdotH * std::sqrt(1 - NdotH * NdotH) / (m * m)) / (4 * NdotH));
+                return (2 * a2 * NdotH * std::sqrt(1 - NdotH * NdotH) / (m * m)) / (4 * NdotH); // pdf = \frac{2a^2cos(\theta)sin(\theta)}{((N.dot(h))^2 * (a^2 - 1) + 1)^2} / 4NdotH, a = roughness^2
             } else {
                 return 0.0f;
             }

@@ -49,7 +49,7 @@ int main() {
     Model tallbox("../Core/models/cornellbox/tallbox.obj", mirror);
     Model left("../Core/models/cornellbox/left.obj", red);
     Model right("../Core/models/cornellbox/right.obj", green);
-    Model light_("../Core/models/cornellbox/light.obj", light); // 增加了 src/ 以应对我的 build 目录在外面的问题
+    Model light_("../Core/models/cornellbox/light.obj", light);
 
     scene.add(&floor);
     scene.add(&shortbox);

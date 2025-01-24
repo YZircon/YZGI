@@ -22,7 +22,7 @@ public:
         pMax = Eigen::Vector3f(minNum, minNum, minNum);
     }
 
-    Bounds3(const Eigen::Vector3f p) : pMin(p), pMax(p) {}
+    Bounds3(const Eigen::Vector3f &p) : pMin(p), pMax(p) {}
 
     Bounds3(const Eigen::Vector3f& p1, const Eigen::Vector3f& p2){
         pMin = Eigen::Vector3f(std::fmin(p1.x(), p2.x()), std::fmin(p1.y(), p2.y()), std::fmin(p1.z(), p2.z()));

@@ -10,6 +10,8 @@
 #include <iostream>
 #include "Eigen/Dense"
 
+//TODO: 目前对Material的设计是需要的参数Material都有(比如更复杂的PBR贴图等), 但在模型加载时不提供接口(OBJ等传统格式具有较大的局限性, 难以兼容), 做实验可以直接手动加载材质/设置参数
+
 #include "global.hpp"
 
 enum MaterialType {

@@ -6,25 +6,24 @@ An implementation of useful GI Algorithms, using C/C++
 
 <p align="center">
   <picture>
-    <img src="images/CornellBox_Microfacet_1024spp_4142s.png" height="250em">
+    <img src="images/CornellBox_Microfacet_1024spp_MIS_2402s.png" height="250em">
   </picture>
   <picture>
-    <img src="images/CornellBox+Sphere_Mirror_1024spp_3582s.png" height="250em">
+    <img src="images/CornellBox_Sphere_Mirror_1024spp_2811s.png" height="250em">
   </picture>
   <picture>
-    <img src="images/CornellBox+Sphere_Mirror_Glass_1024spp_4382s.png" height="250em">
+    <img src="images/CornellBox_Sphere_Mirror_Glass_1024spp_4061s.png" height="250em">
   </picture>
 </p>
 
-The sphere and tall box in the left image use microfacet material, while the other objects use diffuse material. It was rendered in 4142 seconds at 1024 samples per pixel (spp).
+The sphere and tall box in the left image use microfacet material, while the other objects use diffuse material. It was rendered in 2402 seconds at 1024 samples per pixel (spp).
 
-The sphere and tall box in the middle image use material based on the Fresnel reflection equations, while other objects use diffuse material. And it was rendered in 3582 seconds at 1024 spp.
+The sphere and tall box in the middle image use mirror material based on the Fresnel reflection equations, while other objects use diffuse material. And it was rendered in 2811 seconds at 1024 spp.
 
-The left sphere in the right image uses mirror material, and the right sphere uses glass material, while other objects use diffuse material. It was rendered in 4382 seconds at 1024 spp.
+The left sphere in the right image uses mirror material, and the right sphere uses glass material, while other objects use diffuse material. It was rendered in 4061 seconds at 1024 spp.
 
-All of the images were rendered by YZGI.
+All of the images were rendered by YZGI, running on a single Performance Core of an Intel(R) Core(TM) Ultra 7 265K CPU.
 
-------
 
 ## Features (Working now)
 
@@ -55,7 +54,7 @@ All of the images were rendered by YZGI.
   
 **Sampling**
 
-- [ ] Multiple Importance Sampling
+- [x] Multiple Importance Sampling
 
 **Color Space**
 
